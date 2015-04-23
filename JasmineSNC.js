@@ -3298,10 +3298,170 @@ getJasmineRequireObj().version = function() {
 };
 
 
-// required by ServiceNow
+/// -- console.js
+getJasmineRequireObj().snc = function(j$) {
+  j$.SncReporter = jasmineRequire.SncReporter();
+};
+
+getJasmineRequireObj().SncReporter = function() {
+
+  var noopTimer = {
+    start: function(){},
+    elapsed: function(){ return 0; }
+  };
+
+  function SncReporter(options) {
+    var print = options.print,
+      showColors = options.showColors || false,
+      onComplete = options.onComplete || function() {},
+      timer = options.timer || noopTimer,
+      specCount,
+      failureCount,
+      failedSpecs = [],
+      pendingCount,
+      ansi = {
+        green: '\x1B[32m',
+        red: '\x1B[31m',
+        yellow: '\x1B[33m',
+        none: '\x1B[0m'
+      },
+      failedSuites = [];
+
+    this.jasmineStarted = function() {
+      specCount = 0;
+      failureCount = 0;
+      pendingCount = 0;
+      print('Started');
+      printNewline();
+      timer.start();
+    };
+
+    this.jasmineDone = function() {
+      printNewline();
+      for (var i = 0; i < failedSpecs.length; i++) {
+        specFailureDetails(failedSpecs[i]);
+      }
+
+      if(specCount > 0) {
+        printNewline();
+
+        var specCounts = specCount + ' ' + plural('spec', specCount) + ', ' +
+          failureCount + ' ' + plural('failure', failureCount);
+
+        if (pendingCount) {
+          specCounts += ', ' + pendingCount + ' pending ' + plural('spec', pendingCount);
+        }
+
+        print(specCounts);
+      } else {
+        print('No specs found');
+      }
+
+      printNewline();
+      var seconds = timer.elapsed() / 1000;
+      print('Finished in ' + seconds + ' ' + plural('second', seconds));
+      printNewline();
+
+      for(i = 0; i < failedSuites.length; i++) {
+        suiteFailureDetails(failedSuites[i]);
+      }
+
+      onComplete(failureCount === 0);
+    };
+
+    this.specDone = function(result) {
+      specCount++;
+
+      if (result.status == 'pending') {
+        pendingCount++;
+        print(colored('yellow', '*'));
+        return;
+      }
+
+      if (result.status == 'passed') {
+        print(colored('green', '.'));
+        return;
+      }
+
+      if (result.status == 'failed') {
+        failureCount++;
+        failedSpecs.push(result);
+        print(colored('red', 'F'));
+      }
+    };
+
+    this.suiteDone = function(result) {
+      if (result.failedExpectations && result.failedExpectations.length > 0) {
+        failureCount++;
+        failedSuites.push(result);
+      }
+    };
+
+    return this;
+
+    function printNewline() {
+      print('\n');
+    }
+
+    function colored(color, str) {
+      return showColors ? (ansi[color] + str + ansi.none) : str;
+    }
+
+    function plural(str, count) {
+      return count == 1 ? str : str + 's';
+    }
+
+    function repeat(thing, times) {
+      var arr = [];
+      for (var i = 0; i < times; i++) {
+        arr.push(thing);
+      }
+      return arr;
+    }
+
+    function indent(str, spaces) {
+      var lines = (str || '').split('\n');
+      var newArr = [];
+      for (var i = 0; i < lines.length; i++) {
+        newArr.push(repeat(' ', spaces).join('') + lines[i]);
+      }
+      return newArr.join('\n');
+    }
+
+    function specFailureDetails(result) {
+      printNewline();
+      print(result.fullName);
+
+      for (var i = 0; i < result.failedExpectations.length; i++) {
+        var failedExpectation = result.failedExpectations[i];
+        printNewline();
+        print(indent(failedExpectation.message, 2));
+        print(indent(failedExpectation.stack, 2));
+      }
+
+      printNewline();
+    }
+
+    function suiteFailureDetails(result) {
+      for (var i = 0; i < result.failedExpectations.length; i++) {
+        printNewline();
+        print(colored('red', 'An error was thrown in an afterAll'));
+        printNewline();
+        print(colored('red', 'AfterAll ' + result.failedExpectations[i].message));
+
+      }
+      printNewline();
+    }
+  }
+
+  return SncReporter;
+};
+
+
+/// -- boot.js
 var JasmineSNC = Class.create();
 JasmineSNC.prototype = {
-    initialize: function(scope) {
+    initialize: function() {
         /**
          * ## Require & Instantiate
          *
@@ -3313,7 +3473,7 @@ JasmineSNC.prototype = {
          * Since this is being run in a ServiceNow's backend JavaScript runtime and the results should populate to Jasmine SNC tables,
          * require the Jasmine SNC specific code, injecting the same reference.
          */
-        jasmineRequire.jasmineSnc(jasmine);
+        jasmineRequire.snc(jasmine);
 
         /**
          * Create the Jasmine environment. This is used to run all specs in a project.
@@ -3330,10 +3490,10 @@ JasmineSNC.prototype = {
         var jasmineInterface = jasmineRequire.interface2(jasmine, env);
 
         /**
-         * Add all of the Jasmine global/public interface to the given scope, so a project can use the public interface directly.
+         * Add all of the Jasmine global/public interface to the global scope, so a project can use the public interface directly.
          * For example, calling `describe` in specs instead of `jasmine.getEnv().describe`.
          */
-        Object.extend(scope, jasmineInterface);
+        Object.extend(jasmine.getGlobal(), jasmineInterface);
 
 
         /**
@@ -3351,11 +3511,9 @@ JasmineSNC.prototype = {
          * The `SncReporter` saves the test run results into the correct tables in ServiceNow
          */
         sncReporter = new jasmine.SncReporter({
-            env: env,
+            print: function(msg) { gs.log(new Date().getTime() + ' ' + msg, 'JasmineSNC'); },
             timer: new jasmine.Timer()
         });
-
-        sncReporter.initialize();
 
         /**
          * The `jsApiReporter` also receives spec results, and is used by any environment that needs to extract the results from JavaScript.
