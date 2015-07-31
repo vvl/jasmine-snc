@@ -3299,8 +3299,8 @@ getJasmineRequireObj().version = function() {
 
 
 /// -- console.js
-getJasmineRequireObj().snc = function(j$) {
-  j$.SncReporter = jasmineRequire.SncReporter();
+getJasmineRequireObj().snc = function(jRequire, j$) {
+  j$.SncReporter = jRequire.SncReporter();
 };
 
 getJasmineRequireObj().SncReporter = function() {
@@ -3461,24 +3461,27 @@ getJasmineRequireObj().SncReporter = function() {
 /// -- boot.js
 var JasmineSNC = Class.create();
 JasmineSNC.prototype = {
+    jasmine: null,
+    
     initialize: function() {
         /**
          * ## Require & Instantiate
          *
          * Require Jasmine's core files. Specifically, this requires and attaches all of Jasmine's code to the `jasmine` reference.
          */
-        var jasmine = jasmineRequire.core(jasmineRequire);
+        var jasmineRequire = getJasmineRequireObj();
+        this.jasmine = jasmineRequire.core(jasmineRequire);
 
         /**
          * Since this is being run in a ServiceNow's backend JavaScript runtime and the results should populate to Jasmine SNC tables,
          * require the Jasmine SNC specific code, injecting the same reference.
          */
-        jasmineRequire.snc(jasmine);
+        jasmineRequire.snc(jasmineRequire, this.jasmine);
 
         /**
          * Create the Jasmine environment. This is used to run all specs in a project.
          */
-        var env = jasmine.getEnv();
+        var env = this.jasmine.getEnv();
 
 
         /**
@@ -3487,13 +3490,13 @@ JasmineSNC.prototype = {
          * Build up the functions that will be exposed as the Jasmine public interface. A project can customize, rename or alias any
          * of these functions as desired, provided the implementation remains unchanged.
          */
-        var jasmineInterface = jasmineRequire.interface2(jasmine, env);
+        var jasmineInterface = jasmineRequire.interface2(this.jasmine, env);
 
         /**
          * Add all of the Jasmine global/public interface to the global scope, so a project can use the public interface directly.
          * For example, calling `describe` in specs instead of `jasmine.getEnv().describe`.
          */
-        Object.extend(jasmine.getGlobal(), jasmineInterface);
+        Object.extend(this.jasmine.getGlobal(), jasmineInterface);
 
 
         /**
@@ -3510,9 +3513,9 @@ JasmineSNC.prototype = {
          * ## Reporters
          * The `SncReporter` saves the test run results into the correct tables in ServiceNow
          */
-        sncReporter = new jasmine.SncReporter({
+        var sncReporter = new this.jasmine.SncReporter({
             print: function(msg) { gs.log(new Date().getTime() + ' ' + msg, 'JasmineSNC'); },
-            timer: new jasmine.Timer()
+            timer: new this.jasmine.Timer()
         });
 
         /**
@@ -3523,9 +3526,8 @@ JasmineSNC.prototype = {
     },
 
     run: function() {
-        jasmine.getEnv().execute();
+        this.jasmine.getEnv().execute();
     },
 
     type: 'JasmineSNC'
 };
-
