@@ -3737,7 +3737,7 @@ var JasmineSNC = Class.create();
 JasmineSNC.prototype = {
     jasmine: null,
     
-    initialize: function() {
+    initialize: function(mixInScope) {
         // mixin the standard timer interface implementation: setTimeout, clearTimeout, setInterval, clearInterval
         // based on ServiceNow's gs.sleep() method
         makeWindowTimer(this, function(ms) { gs.sleep(ms); });
@@ -3752,34 +3752,18 @@ JasmineSNC.prototype = {
          * Require Jasmine's core files. Specifically, this requires and attaches all of Jasmine's code to the `jasmine` reference.
          */
         var jasmineRequire = this.getJasmineRequireObj();
-        this.jasmine = jasmineRequire.core(jasmineRequire);
+        var jasmine = this.jasmine = jasmineRequire.core(jasmineRequire);
 
         /**
          * Since this is being run in a ServiceNow's backend JavaScript runtime and the results should populate to Jasmine SNC tables,
          * require the Jasmine SNC specific code, injecting the same reference.
          */
-        jasmineRequire.snc(jasmineRequire, this.jasmine);
+        jasmineRequire.snc(jasmineRequire, jasmine);
 
         /**
          * Create the Jasmine environment. This is used to run all specs in a project.
          */
-        var env = this.jasmine.getEnv();
-
-
-        /**
-         * ## The Global Interface
-         *
-         * Build up the functions that will be exposed as the Jasmine public interface. A project can customize, rename or alias any
-         * of these functions as desired, provided the implementation remains unchanged.
-         */
-        var jasmineInterface = jasmineRequire.interface2(this.jasmine, env);
-
-        /**
-         * Add all of the Jasmine global/public interface to the global scope, so a project can use the public interface directly.
-         * For example, calling `describe` in specs instead of `jasmine.getEnv().describe`.
-         */
-        Object.extend(this.jasmine.getGlobal(), jasmineInterface);
-
+        var env = jasmine.getEnv();
 
         /**
          * ## Runner Parameters
@@ -3789,7 +3773,6 @@ JasmineSNC.prototype = {
 
         env.catchExceptions(true);
         env.throwOnExpectationFailure(false);
-
 
         /**
          * ## Reporters
@@ -3805,12 +3788,28 @@ JasmineSNC.prototype = {
             },
             timer: new this.jasmine.Timer()
         });
+        
+        /**
+         * ## The Global Interface
+         *
+         * Build up the functions that will be exposed as the Jasmine public interface. A project can customize, rename or alias any
+         * of these functions as desired, provided the implementation remains unchanged.
+         */
+        var jasmineInterface = jasmineRequire.interface2(jasmine, env);
 
         /**
          * The `jsApiReporter` also receives spec results, and is used by any environment that needs to extract the results from JavaScript.
          */
         env.addReporter(jasmineInterface.jsApiReporter);
         env.addReporter(sncReporter);
+        
+        if (typeof mixInScope !== 'undefined') {
+            /**
+             * Add all of the Jasmine global/public interface to the global scope, so a project can use the public interface directly.
+             * For example, calling `describe` in specs instead of `jasmine.getEnv().describe`.
+             */
+            Object.extend(mixInScope, jasmineInterface);
+        }
     },
 
     run: function() {
