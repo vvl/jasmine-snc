@@ -1,3 +1,5 @@
+function require_jasmine_js(scope) {
+
 /*
 Copyright (c) 2008-2015 Pivotal Labs
 
@@ -75,7 +77,7 @@ var getJasmineRequireObj = (function (jasmineGlobal) {
   };
 
   return getJasmineRequire;
-})(this);
+})(scope);
 
 getJasmineRequireObj().requireMatchers = function(jRequire, j$) {
   var availableMatchers = [
@@ -3457,6 +3459,9 @@ getJasmineRequireObj().SncReporter = function() {
   return SncReporter;
 };
 
+    return getJasmineRequireObj;
+} // end of function require_jasmine_js(scope)
+
 
 /// -- boot.js
 var JasmineSNC = Class.create();
@@ -3464,12 +3469,16 @@ JasmineSNC.prototype = {
     jasmine: null,
     
     initialize: function() {
+        // initializes the getJasmineRequireObj function and captures the jasmine's global scope
+        // this JasmineSNC instance will be used as Jasmine's global scope
+        this.getJasmineRequireObj = require_jasmine_js(this);
+        
         /**
          * ## Require & Instantiate
          *
          * Require Jasmine's core files. Specifically, this requires and attaches all of Jasmine's code to the `jasmine` reference.
          */
-        var jasmineRequire = getJasmineRequireObj();
+        var jasmineRequire = this.getJasmineRequireObj();
         this.jasmine = jasmineRequire.core(jasmineRequire);
 
         /**
