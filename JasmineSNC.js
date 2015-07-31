@@ -3796,7 +3796,13 @@ JasmineSNC.prototype = {
          * The `SncReporter` saves the test run results into the correct tables in ServiceNow
          */
         var sncReporter = new this.jasmine.SncReporter({
-            print: function(msg) { gs.log(new Date().getTime() + ' ' + msg, 'JasmineSNC'); },
+            print: function(msg) {
+                if (typeof _gs_log === 'function') {
+                    _gs_log(new Date().getTime() + ' ' + msg, 'JasmineSNC');
+                } else {
+                    gs.log(new Date().getTime() + ' ' + msg, 'JasmineSNC');
+                }
+            },
             timer: new this.jasmine.Timer()
         });
 
