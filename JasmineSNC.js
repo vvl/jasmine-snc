@@ -3780,10 +3780,12 @@ JasmineSNC.prototype = {
          */
         var sncReporter = new this.jasmine.SncReporter({
             print: function(msg) {
-                if (typeof _gs_log === 'function') {
-                    _gs_log(new Date().getTime() + ' ' + msg, 'JasmineSNC');
+                if (typeof jsnc_eval_print === 'function') {
+                    jsnc_eval_print(msg, 'JasmineSNC');
                 } else {
-                    gs.log(new Date().getTime() + ' ' + msg, 'JasmineSNC');
+                    if (msg !== "\n") {
+                        gs.log(new Date().getTime() + ' ' + msg, 'JasmineSNC');
+                    }
                 }
             },
             timer: new this.jasmine.Timer()
