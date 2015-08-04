@@ -3,7 +3,7 @@
 var fs = require('fs');
 var request = require("request");
 
-function PostCode(codestring, callback) {
+function SncEvalString(codestring, callback) {
   var done = function(error, result) {};
   if (typeof callback == 'function') {
     done = callback;
@@ -46,7 +46,7 @@ function SnvEvalFile(filename, callback) {
     if (error) {
       done("FATAL An error occurred trying to read in the file: " + error, null);
     } else if (data) {
-      PostCode(data, callback);
+      SncEvalString(data, callback);
     } else {
       done("the input file is empty -> existing", null);
     }
