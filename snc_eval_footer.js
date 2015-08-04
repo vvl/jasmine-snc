@@ -1,1 +1,1 @@
-jasmine.run();
+jsnc.run();
