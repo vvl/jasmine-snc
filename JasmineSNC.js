@@ -211,6 +211,9 @@ getJasmineRequireObj().base = function(j$, jasmineGlobal) {
     if (!putativeSpy) {
       return false;
     }
+    if (j$.util.isUndefined(putativeSpy.and) || j$.util.isUndefined(putativeSpy.calls)) {
+      return false;
+    }
     return putativeSpy.and instanceof j$.SpyStrategy &&
       putativeSpy.calls instanceof j$.CallTracker;
   };
