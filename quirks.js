@@ -15,6 +15,29 @@ describe("Rhino 1.5R4 quirks", function() {
     var obj = {};
     expect(jasmine.isSpy(obj)).toBe(false);
   });
+  
+  it("an empty Array object evaluates to true - fix for 'processes a complicated tree with the root specified' spec in core/TreeProcessorSpec.js", function() {
+    /*
+    In Rhino 1.5R4 the code below wrongly evaluates to true.
+    
+    var arr = [];
+    var result = (!arr);
+    
+    
+    Replace the following code in processNode():
+    
+      if (!node.children) {
+    
+    replace with
+    
+      if (!(typeof node.children === 'object')) {
+    
+    */
+    var arr = [];
+    var result = (!arr);
+    
+    expect(result).toBe(false);
+  });
 });
 
 jsnc.run();

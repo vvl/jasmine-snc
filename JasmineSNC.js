@@ -2238,7 +2238,7 @@ getJasmineRequireObj().TreeProcessor = function() {
 
       parentEnabled = parentEnabled && node.isExecutable();
 
-      if (!node.children) {
+      if (!(typeof node.children === 'object')) {
         stats[node.id] = {
           executable: parentEnabled && node.isExecutable(),
           segments: [{
