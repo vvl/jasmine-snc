@@ -15,6 +15,9 @@
   ],
   "description": "Use the Jasmine JavaScript testing framework inside ServiceNow.",
   "homepage": "https://github.com/vvl/jasmine-snc",
+  "dependencies": {
+    "request": "~2.60.0"
+  },
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-cli": "^0.1.13",
