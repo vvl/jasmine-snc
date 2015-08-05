@@ -3117,7 +3117,7 @@ getJasmineRequireObj().toThrowError = function(j$) {
           return fail;
         }
 
-        if (!(thrown instanceof Error)) {
+        if ((typeof thrown === 'undefined') || !(thrown instanceof Error)) {
           fail.message = function() { return 'Expected function to throw an Error, but it threw ' + j$.pp(thrown) + '.'; };
           return fail;
         }

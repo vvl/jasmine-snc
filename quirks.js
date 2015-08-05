@@ -32,6 +32,23 @@ describe("Rhino 1.5R4 quirks", function() {
     expect(result).toBe(false);
   });
   
+  it("the expect().toThrowError() method would not crash the js runtime", function() {
+    /*
+    in Rhino 1.5R4 the code 'undefined instanceof Object' crashes the runtime.
+    
+    Change the following code in getJasmineRequireObj().toThrowError():
+    
+      if (!(thrown instanceof Error)) {
+    
+    replace with
+    
+      if ((typeof thrown === 'undefined') || !(thrown instanceof Error)) {
+    
+    */
+    var foo = function() { throw undefined; };
+    expect(foo).not.toThrowError();
+  });
+  
   xit("an empty Array object evaluates to true - fix for 'processes a complicated tree with the root specified' spec in core/TreeProcessorSpec.js", function() {
     /*
     In Rhino 1.5R4 the code below wrongly evaluates to true.
