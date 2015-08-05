@@ -3750,7 +3750,18 @@ JasmineSNC.prototype = {
     initialize: function(mixInScope) {
         // mixin the standard timer interface implementation: setTimeout, clearTimeout, setInterval, clearInterval
         // based on ServiceNow's gs.sleep() method
-        makeWindowTimer(this, function(ms) { gs.sleep(ms); });
+        var jsnc_eval_sleep = function(ms) {};
+        if (typeof module !== 'undefined') {
+          var sleep = require('sleep');
+          jsnc_eval_sleep = function(ms) {
+            sleep.usleep(ms * 1000);
+          }
+        } else if (typeof gs !== 'undefined') {
+          jsnc_eval_sleep = function(ms) {
+            gs.sleep(ms);
+          }
+        }
+        this.timerLoop = makeWindowTimer(this, jsnc_eval_sleep);
         
         // initializes the getJasmineRequireObj function and captures the jasmine's global scope
         // this JasmineSNC instance will be used as Jasmine's global scope
@@ -3825,7 +3836,11 @@ JasmineSNC.prototype = {
     },
 
     run: function() {
-        this.jasmine.getEnv().execute();
+      var self = this;
+      this.setTimeout(function(){
+        self.jasmine.getEnv().execute();
+      }, 0);
+      this.timerLoop();
     },
 
     type: 'JasmineSNC'
