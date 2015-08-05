@@ -2342,7 +2342,7 @@ getJasmineRequireObj().TreeProcessor = function() {
     }
 
     function executeNode(node, segmentNumber) {
-      if (node.children) {
+      if (typeof node.children === 'object') {
         return {
           fn: function(done) {
             nodeStart(node);

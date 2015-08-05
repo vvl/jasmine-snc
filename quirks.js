@@ -38,6 +38,29 @@ describe("Rhino 1.5R4 quirks", function() {
     
     expect(result).toBe(false);
   });
+  
+  xit("an empty Array object evaluates to true - fix for 'runs a node with no children' spec in core/TreeProcessorSpec.js", function() {
+    /*
+    In Rhino 1.5R4 the code below wrongly evaluates to true.
+    
+    var arr = [];
+    var result = (!arr);
+    
+    
+    Replace the following code in executeNode():
+    
+      if (node.children) {
+    
+    replace with
+    
+      if (typeof node.children === 'object') {
+    
+    */
+    var arr = [];
+    var result = (!arr);
+    
+    expect(result).toBe(false);
+  });
 });
 
 jsnc.run();
