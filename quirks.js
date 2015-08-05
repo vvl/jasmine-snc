@@ -2,7 +2,7 @@ var jsnc = new JasmineSNC(this);
 var jasmine = jsnc.jasmine;
 
 describe("Rhino 1.5R4 quirks", function() {
-  it("the jasmine.isSpy() method would not crash the js runtime", function() {
+  it("the jasmine.isSpy({}) method would not crash the js runtime", function() {
     /*
     in Rhino 1.5R4 the code 'undefined instanceof Object' crashes the runtime
     add the following code to isSpy():
@@ -16,7 +16,23 @@ describe("Rhino 1.5R4 quirks", function() {
     expect(jasmine.isSpy(obj)).toBe(false);
   });
   
-  it("an empty Array object evaluates to true - fix for 'processes a complicated tree with the root specified' spec in core/TreeProcessorSpec.js", function() {
+  it("the jasmine.matchersUtil.equals(undefined, anObject) method would not crash the js runtime", function() {
+    /*
+    in Rhino 1.5R4 the code 'undefined instanceof Object' crashes the runtime
+    add the following code to eq():
+    
+    if (j$.util.isUndefined(putativeSpy.and) || j$.util.isUndefined(putativeSpy.calls)) {
+      return false;
+    }
+    
+    */
+    var obj = {};
+    var result = jasmine.matchersUtil.equals(undefined, obj);
+
+    expect(result).toBe(false);
+  });
+  
+  xit("an empty Array object evaluates to true - fix for 'processes a complicated tree with the root specified' spec in core/TreeProcessorSpec.js", function() {
     /*
     In Rhino 1.5R4 the code below wrongly evaluates to true.
     
