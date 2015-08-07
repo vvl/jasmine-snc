@@ -94,6 +94,42 @@ describe("Rhino 1.5R4 quirks", function() {
     
     expect(result).toBe(false);
   });
+  
+  it("The 'toThrowError' matcher correctly shows the typename of the thrown Error", function() {
+    /*
+    In Rhino 1.5R4 the constructor for all 6 standard subclasses of the Error type is the same: 'function Error() { }'
+    This also causes 2 Jasmine specs to fail:
+     - core/toThrowErrorSpec.js/fails if thrown is a type of Error and the expected is a different Error
+    
+    E.g. in the same code (new URIError().constructor).toString() works differently in Rhino and in Node:
+    in Rhino: 'function Error() { [native code for Error.Error, arity=1] }'
+    in Node: 'function URIError() { [native code] }'
+    
+    
+    Replace the following code in thrownDescription: function(thrown) :
+    
+      j$.fnNameFor(thrown.constructor)
+    
+    replace with
+    
+      j$.fnNameFor(thrown)
+    
+    */
+    
+    var util = {
+        equals: jasmine.createSpy('delegated-equal').and.returnValue(false)
+      },
+      matcher = jasmine.matchers.toThrowError(util),
+      fn = function() {
+        throw new RangeError();
+      },
+      result;
+
+    result = matcher.compare(fn, TypeError);
+
+    expect(result.pass).toBe(false);
+    expect(result.message()).toEqual("Expected function to throw TypeError, but it threw RangeError.");
+  });
 });
 
 

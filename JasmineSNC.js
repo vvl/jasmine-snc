@@ -3179,7 +3179,7 @@ getJasmineRequireObj().toThrowError = function(j$) {
       return {
         errorTypeDescription: errorType ? j$.fnNameFor(errorType) : 'an exception',
         thrownDescription: function(thrown) {
-          var thrownName = errorType ? j$.fnNameFor(thrown.constructor) : 'an exception',
+          var thrownName = errorType ? j$.fnNameFor(thrown) : 'an exception',
               thrownMessage = '';
 
           if (expected) {
