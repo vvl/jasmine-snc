@@ -49,6 +49,29 @@ describe("Rhino 1.5R4 quirks", function() {
     expect(foo).not.toThrowError();
   });
   
+  it("spyStrategy.throwError() method would not crash the js runtime", function() {
+    /*
+    in Rhino 1.5R4 the code 'undefined instanceof Object' crashes the runtime.
+    This causes a Jasmine spec to crash:
+     - core/SpyStrategySpec.js
+    
+    Change the following code in getJasmineRequireObj().SpyStrategy().throwError():
+    
+      var error = (something instanceof Error) ? something : new Error(something);
+    
+    replace with
+    
+      var error = (typeof something !== 'undefined' && something instanceof Error)
+        ? something : new Error(something);
+    
+    */
+    var spy = jasmine.createSpy('spy'),
+        spyStrategy = new jasmine.SpyStrategy({getSpy: spy});
+
+    spyStrategy.throwError();
+    expect(spy).toHaveBeenCalled();
+  });
+  
   xit("an empty Array object evaluates to true - fix for 'processes a complicated tree with the root specified' spec in core/TreeProcessorSpec.js", function() {
     /*
     In Rhino 1.5R4 the code below wrongly evaluates to true.

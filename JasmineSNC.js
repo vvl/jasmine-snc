@@ -1973,7 +1973,8 @@ getJasmineRequireObj().SpyStrategy = function() {
     };
 
     this.throwError = function(something) {
-      var error = (something instanceof Error) ? something : new Error(something);
+      var error = (typeof something !== 'undefined' && something instanceof Error)
+        ? something : new Error(something);
       plan = function() {
         throw error;
       };
