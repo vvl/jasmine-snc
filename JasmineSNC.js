@@ -142,7 +142,7 @@ getJasmineRequireObj().base = function(j$, jasmineGlobal) {
 
   j$.isA_ = function(typeName, value) {
     if (typeName === 'RegExp') {
-      return (typeof value !== 'undefined') && (value instanceof RegExp);
+      return __safe_instanceof(value, RegExp);
     }
     return Object.prototype.toString.apply(value) === '[object ' + typeName + ']';
   };
@@ -214,11 +214,8 @@ getJasmineRequireObj().base = function(j$, jasmineGlobal) {
     if (!putativeSpy) {
       return false;
     }
-    if (j$.util.isUndefined(putativeSpy.and) || j$.util.isUndefined(putativeSpy.calls)) {
-      return false;
-    }
-    return putativeSpy.and instanceof j$.SpyStrategy &&
-      putativeSpy.calls instanceof j$.CallTracker;
+    return __safe_instanceof(putativeSpy.and, j$.SpyStrategy) &&
+      __safe_instanceof(putativeSpy.calls, j$.CallTracker);
   };
 
   j$.createSpyObj = function(baseName, methodNames) {
@@ -381,7 +378,7 @@ getJasmineRequireObj().Spec = function(j$) {
       return;
     }
 
-    if (e instanceof j$.errors.ExpectationFailed) {
+    if (__safe_instanceof(e, j$.errors.ExpectationFailed)) {
       return;
     }
 
@@ -1514,7 +1511,7 @@ getJasmineRequireObj().MockDate = function() {
     var GlobalDate = global.Date;
 
     self.install = function(mockDate) {
-      if (mockDate instanceof GlobalDate) {
+      if (__safe_instanceof(mockDate, GlobalDate)) {
         currentTime = mockDate.getTime();
       } else {
         currentTime = new GlobalDate().getTime();
@@ -1606,13 +1603,13 @@ getJasmineRequireObj().pp = function(j$) {
         this.emitString(value);
       } else if (j$.isSpy(value)) {
         this.emitScalar('spy on ' + value.and.identity());
-      } else if (value instanceof RegExp) {
+      } else if (__safe_instanceof(value, RegExp)) {
         this.emitScalar(value.toString());
       } else if (typeof value === 'function') {
         this.emitScalar('Function');
       } else if (typeof value.nodeType === 'number') {
         this.emitScalar('HTMLNode');
-      } else if (value instanceof Date) {
+      } else if (__safe_instanceof(value, Date)) {
         this.emitScalar('Date(' + value + ')');
       } else if (j$.util.arrayContains(this.seen, value)) {
         this.emitScalar('<circular reference: ' + (j$.isArray_(value) ? 'Array' : 'Object') + '>');
@@ -1973,8 +1970,7 @@ getJasmineRequireObj().SpyStrategy = function() {
     };
 
     this.throwError = function(something) {
-      var error = (typeof something !== 'undefined' && something instanceof Error)
-        ? something : new Error(something);
+      var error = __safe_instanceof(something, Error) ? something : new Error(something);
       plan = function() {
         throw error;
       };
@@ -2097,7 +2093,7 @@ getJasmineRequireObj().Suite = function(j$) {
   };
 
   Suite.prototype.onException = function() {
-    if (arguments[0] instanceof j$.errors.ExpectationFailed) {
+    if (__safe_instanceof(arguments[0], j$.errors.ExpectationFailed)) {
       return;
     }
 
@@ -2398,15 +2394,15 @@ getJasmineRequireObj().Any = function(j$) {
 
   Any.prototype.asymmetricMatch = function(other) {
     if (this.expectedObject == String) {
-      return typeof other == 'string' || other instanceof String;
+      return typeof other == 'string' || __safe_instanceof(other, String);
     }
 
     if (this.expectedObject == Number) {
-      return typeof other == 'number' || other instanceof Number;
+      return typeof other == 'number' || __safe_instanceof(other, Number);
     }
 
     if (this.expectedObject == Function) {
-      return typeof other == 'function' || other instanceof Function;
+      return typeof other == 'function' || __safe_instanceof(other, Function);
     }
 
     if (this.expectedObject == Object) {
@@ -2417,7 +2413,7 @@ getJasmineRequireObj().Any = function(j$) {
       return typeof other == 'boolean';
     }
 
-    return other instanceof this.expectedObject;
+    return __safe_instanceof(other, this.expectedObject);
   };
 
   Any.prototype.jasmineToString = function() {
@@ -3121,7 +3117,7 @@ getJasmineRequireObj().toThrowError = function(j$) {
           return fail;
         }
 
-        if ((typeof thrown === 'undefined') || !(thrown instanceof Error)) {
+        if (!__safe_instanceof(thrown, Error)) {
           fail.message = function() { return 'Expected function to throw an Error, but it threw ' + j$.pp(thrown) + '.'; };
           return fail;
         }
@@ -3195,7 +3191,7 @@ getJasmineRequireObj().toThrowError = function(j$) {
         messageDescription: function() {
           if (expected === null) {
             return '';
-          } else if (expected instanceof RegExp) {
+          } else if (__safe_instanceof(expected, RegExp)) {
             return ' with a message matching ' + j$.pp(expected);
           } else {
             return ' with message ' + j$.pp(expected);
@@ -3205,14 +3201,14 @@ getJasmineRequireObj().toThrowError = function(j$) {
           return expected === null && errorType === null;
         },
         matches: function(error) {
-          return (errorType === null || error instanceof errorType) &&
+          return (errorType === null || __safe_instanceof(error, errorType)) &&
             (expected === null || messageMatch(error.message));
         }
       };
     }
 
     function isStringOrRegExp(potential) {
-      return potential instanceof RegExp || (typeof potential == 'string');
+      return __safe_instanceof(potential, RegExp) || (typeof potential == 'string');
     }
 
     function isAnErrorType(type) {
@@ -3475,6 +3471,16 @@ getJasmineRequireObj().SncReporter = function() {
 
     return getJasmineRequireObj;
 } // end of function require_jasmine_js(scope)
+
+
+// a workaround for the issue with ServiceNow Rhino runtime
+// it crashes when tries to evalate undefined instanceof SomeType
+function __safe_instanceof(obj, type) {
+  if (typeof obj === 'undefined' || typeof type === 'undefined') {
+    return false;
+  }
+  return obj instanceof type;
+}
 
 
 // copied from https://gist.github.com/kevinoid/3146420 on 31 July 2015

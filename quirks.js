@@ -72,6 +72,28 @@ describe("Rhino 1.5R4 quirks", function() {
     expect(spy).toHaveBeenCalled();
   });
   
+  it("MockDate.install() method would not crash the js runtime", function() {
+    /*
+    in Rhino 1.5R4 the code 'undefined instanceof Object' crashes the runtime.
+    This causes a Jasmine spec to crash:
+     - core/QueueRunnerSpec.js
+    
+    Define a global function __safe_instanceof(obj, type).
+    
+    Change the following code in MockDate.install():
+    
+      if (mockDate instanceof GlobalDate) {
+    
+    replace with
+    
+      if (__safe_instanceof(mockDate, GlobalDate)) {
+    
+    */
+    var mockDate = new jasmine.MockDate({ Date: Date });
+    mockDate.install();
+    expect(true).toBe(true);
+  });
+  
   xit("an empty Array object evaluates to true - fix for 'processes a complicated tree with the root specified' spec in core/TreeProcessorSpec.js", function() {
     /*
     In Rhino 1.5R4 the code below wrongly evaluates to true.
