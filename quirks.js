@@ -130,6 +130,25 @@ describe("Rhino 1.5R4 quirks", function() {
     expect(result.pass).toBe(false);
     expect(result.message()).toEqual("Expected function to throw TypeError, but it threw RangeError.");
   });
+  
+  it("jasmine.isA_('RegExp', /foo/) evaluates to true", function() {
+    /*
+    In ServiceNow's Rhino 1.5R4 regular expression literals have the type SNRegExp, not RegExp.
+    This causes a number Jasmine specs to fail:
+     - core/toMatchSpec.js
+     - core/StringMatchingSpec.js
+    */
+    expect(jasmine.isA_('RegExp', /foo/)).toBeTruthy();
+    
+    /* FIX:
+     Add the following code into the isA_() function:
+     
+     if (typeName === 'RegExp') {
+       return (typeof value !== 'undefined') && (value instanceof RegExp);
+     }
+     
+     */
+  });
 });
 
 

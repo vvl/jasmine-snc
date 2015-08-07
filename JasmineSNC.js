@@ -141,6 +141,9 @@ getJasmineRequireObj().base = function(j$, jasmineGlobal) {
   };
 
   j$.isA_ = function(typeName, value) {
+    if (typeName === 'RegExp') {
+      return (typeof value !== 'undefined') && (value instanceof RegExp);
+    }
     return Object.prototype.toString.apply(value) === '[object ' + typeName + ']';
   };
 
