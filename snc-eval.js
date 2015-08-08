@@ -53,6 +53,10 @@ function SnvEvalFile(filename, callback) {
   });
 }
 
+
+exports.SncEvalString = SncEvalString;
+exports.SnvEvalFile = SnvEvalFile;
+
 // the code below only executes when this file is run directly
 // it does not execute when this file is require()'d from another file
 // this allows includuing this file as a module to other files
@@ -72,3 +76,4 @@ if (require.main === module) {
     }
   });
 }
+
