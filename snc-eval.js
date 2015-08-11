@@ -19,7 +19,7 @@ function SncEvalString(codestring, callback) {
       url: '/eval.do',
       form: { script: codestring },
       auth: { user: username, pass: password },
-      timeout: 5000
+      timeout: 60000
     },
     function(error, response, body) {
       if (error) {
