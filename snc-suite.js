@@ -9,12 +9,13 @@ function executeSpecs(specs, done, isVerbose, showColors) {
   var started = new Date().getTime();
   
   function printResultSummary() {
-    var elapsed = new Date().getTime() - started;
-    console.log("\nSummary of " + results.length + " file(s):");
-    var totalSpecs = 0,
+    var elapsed = new Date().getTime() - started,
+        totalSpecs = 0,
         totalFailures = 0,
         totalCrashes = 0,
         totalTimeInSnc = 0.0;
+        
+    console.log("\nSummary of failed file(s):");
     results.forEach(function(result) {
       var summary = 'CRASHED';
       if (result.status == 'OK') {
@@ -27,7 +28,9 @@ function executeSpecs(specs, done, isVerbose, showColors) {
       } else {
         totalCrashes += 1;
       }
-      console.log(result.filename + ': ' + summary);
+      if (result.status != 'OK' || result.counts.failures > 0) {
+        console.log(result.filename + ': ' + summary);
+      }
     });
     console.log(results.length + " files, " + totalCrashes + " crashed, " + totalSpecs + " specs, " + totalFailures + " failures");
     console.log('Total time ' + elapsed / 1000 + ' seconds, ServiceNow time ' + Math.round(totalTimeInSnc * 1000) / 1000.0 + ' seconds');
