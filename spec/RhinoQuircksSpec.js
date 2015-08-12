@@ -1,6 +1,3 @@
-var jsnc = new JasmineSNC(this);
-var jasmine = jsnc.jasmine;
-
 describe("Rhino 1.5R4 quirks", function() {
   it("the jasmine.isSpy({}) method would not crash the js runtime", function() {
     /*
@@ -13,7 +10,7 @@ describe("Rhino 1.5R4 quirks", function() {
     
     */
     var obj = {};
-    expect(jasmine.isSpy(obj)).toBe(false);
+    expect(j$.isSpy(obj)).toBe(false);
   });
   
   it("the jasmine.matchersUtil.equals(undefined, anObject) method would not crash the js runtime", function() {
@@ -27,7 +24,7 @@ describe("Rhino 1.5R4 quirks", function() {
     
     */
     var obj = {};
-    var result = jasmine.matchersUtil.equals(undefined, obj);
+    var result = j$.matchersUtil.equals(undefined, obj);
 
     expect(result).toBe(false);
   });
@@ -89,7 +86,7 @@ describe("Rhino 1.5R4 quirks", function() {
       if (__safe_instanceof(mockDate, GlobalDate)) {
     
     */
-    var mockDate = new jasmine.MockDate({ Date: Date });
+    var mockDate = new j$.MockDate({ Date: Date });
     mockDate.install();
     expect(true).toBe(true);
   });
@@ -182,9 +179,9 @@ describe("Rhino 1.5R4 quirks", function() {
     */
     
     var util = {
-        equals: jasmine.createSpy('delegated-equal').and.returnValue(false)
+        equals: j$.createSpy('delegated-equal').and.returnValue(false)
       },
-      matcher = jasmine.matchers.toThrowError(util),
+      matcher = j$.matchers.toThrowError(util),
       fn = function() {
         throw new RangeError();
       },
@@ -203,7 +200,7 @@ describe("Rhino 1.5R4 quirks", function() {
      - core/toMatchSpec.js
      - core/StringMatchingSpec.js
     */
-    expect(jasmine.isA_('RegExp', /foo/)).toBeTruthy();
+    expect(j$.isA_('RegExp', /foo/)).toBeTruthy();
     
     /* FIX:
      Add the following code into the isA_() function:
@@ -222,7 +219,7 @@ describe("Rhino 1.5R4 quirks", function() {
      - core/toMatchSpec.js
      - core/StringMatchingSpec.js
     */
-    expect(jasmine.matchersUtil.equals(/foo/, /foo/)).toBeTruthy();
+    expect(j$.matchersUtil.equals(/foo/, /foo/)).toBeTruthy();
     
     /* FIX:
      Add the following code into the eq() function:
@@ -241,7 +238,7 @@ describe("Rhino 1.5R4 quirks", function() {
     This is needed to skip the 'should handle objects with null prototype' spec in PrettyPrintSpec.js.
     In ServiceNow's Rhino 1.5R4 Object.create() is not defined.
     */
-    expect(jasmine.getEnv().ieVersion).toBeLessThan(9);
+    expect(j$.getEnv().ieVersion).toBeLessThan(9);
   });
 });
 
@@ -294,5 +291,3 @@ describe("The timer interface for Rhino 1.5R4", function() {
     expect(foo.deferredFn).toHaveBeenCalled();
   });
 });
-
-jsnc.run();
