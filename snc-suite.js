@@ -29,7 +29,7 @@ function executeSpecs(specs, done, isVerbose, showColors) {
       }
       console.log(result.filename + ': ' + summary);
     });
-    console.log(results.length + " files, " + totalCrashes + " crashed, ", totalSpecs + " specs, " + totalFailures + " failures");
+    console.log(results.length + " files, " + totalCrashes + " crashed, " + totalSpecs + " specs, " + totalFailures + " failures");
     console.log('Total time ' + elapsed / 1000 + ' seconds, ServiceNow time ' + Math.round(totalTimeInSnc * 1000) / 1000.0 + ' seconds');
   }
   
@@ -130,9 +130,12 @@ specs = [];
 if (perfSuite) {
   specs = getFiles(__dirname + '/snc_eval_spec/performance', new RegExp("test.js$"));
 } else {
+  
   var consoleSpecs = getSpecFiles(__dirname + "/snc_eval_spec/jasmine-snc"),
       coreSpecs = getSpecFiles(__dirname + "/snc_eval_spec/core"),
       specs = consoleSpecs.concat(coreSpecs);
+      
+  //var specs = getSpecFiles(__dirname + "/snc_eval_spec/jasmine-snc");
 }
 
 executeSpecs(specs, function(passed) {
