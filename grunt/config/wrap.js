@@ -7,12 +7,12 @@ module.exports = {
     ],
     dest: 'snc_eval_spec/core'
   },
-  'console': {
+  'jasmine-snc': {
     header: 'snc_eval_header.js',
     footer: 'snc_eval_footer.js',
     src: [
-      '../jasmine/spec/console/**/*.js'
+      'spec/**/*.js'
     ],
-    dest: 'snc_eval_spec/console'
+    dest: 'snc_eval_spec/jasmine-snc'
   }
 };

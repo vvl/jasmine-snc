@@ -130,7 +130,7 @@ specs = [];
 if (perfSuite) {
   specs = getFiles(__dirname + '/snc_eval_spec/performance', new RegExp("test.js$"));
 } else {
-  var consoleSpecs = getSpecFiles(__dirname + "/snc_eval_spec/console"),
+  var consoleSpecs = getSpecFiles(__dirname + "/snc_eval_spec/jasmine-snc"),
       coreSpecs = getSpecFiles(__dirname + "/snc_eval_spec/core"),
       specs = consoleSpecs.concat(coreSpecs);
 }
