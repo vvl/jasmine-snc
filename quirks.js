@@ -215,6 +215,27 @@ describe("Rhino 1.5R4 quirks", function() {
      */
   });
   
+  it("matchersUtil.equals(/foo/, /foo/) evaluates to true", function() {
+    /*
+    In ServiceNow's Rhino 1.5R4 regular expression literals have the type SNRegExp, not RegExp.
+    This causes a number Jasmine specs to fail:
+     - core/toMatchSpec.js
+     - core/StringMatchingSpec.js
+    */
+    expect(jasmine.matchersUtil.equals(/foo/, /foo/)).toBeTruthy();
+    
+    /* FIX:
+     Add the following code into the eq() function:
+     
+      case '[object SNRegExp]':
+     
+     just after the line
+      
+      case '[object RegExp]':
+     
+     */
+  });
+  
   it("jasmine.getEnv().ieVersion is less than 9", function() {
     /*
     This is needed to skip the 'should handle objects with null prototype' spec in PrettyPrintSpec.js.

@@ -2672,6 +2672,7 @@ getJasmineRequireObj().matchersUtil = function(j$) {
         return +a == +b;
       // RegExps are compared by their source patterns and flags.
       case '[object RegExp]':
+      case '[object SNRegExp]':
         return a.source == b.source &&
           a.global == b.global &&
           a.multiline == b.multiline &&
