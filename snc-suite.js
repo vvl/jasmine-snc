@@ -30,7 +30,7 @@ function executeSpecs(specs, done, isVerbose, showColors) {
       console.log(result.filename + ': ' + summary);
     });
     console.log(results.length + " files, " + totalCrashes + " crashed, ", totalSpecs + " specs, " + totalFailures + " failures");
-    console.log('Total time ' + elapsed / 1000 + ' seconds, ServiceNow time ' + totalTimeInSnc + ' seconds');
+    console.log('Total time ' + elapsed / 1000 + ' seconds, ServiceNow time ' + Math.round(totalTimeInSnc * 1000) / 1000.0 + ' seconds');
   }
   
   var filefn = function(idx, next) {
