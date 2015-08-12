@@ -140,6 +140,26 @@ describe("Rhino 1.5R4 quirks", function() {
     expect(result).toBe(false);
   });
   
+  xit("long is a valid varibale name - fix for 'should stringify long arrays with properties properly' spec in core/PrettyPrintSpec.js", function() {
+    /*
+    In Rhino 1.5R4 giving the name 'long' to a variable crashes the js runtime.
+
+    Replace the following code in PrettyPrintSpec.js:
+    
+      var long = [1,2,3];
+    
+    replace with
+    
+      var longArray = [1,2,3];
+      
+    (and also rename all occurences of the 'long' local variable)
+    
+    */
+    // this code has to be commented out to avoid a crash
+    //var long = [1,2,3];
+    //expect(long.length).toEqual(3);
+  });
+  
   it("The 'toThrowError' matcher correctly shows the typename of the thrown Error", function() {
     /*
     In Rhino 1.5R4 the constructor for all 6 standard subclasses of the Error type is the same: 'function Error() { }'
@@ -193,6 +213,14 @@ describe("Rhino 1.5R4 quirks", function() {
      }
      
      */
+  });
+  
+  it("jasmine.getEnv().ieVersion is less than 9", function() {
+    /*
+    This is needed to skip the 'should handle objects with null prototype' spec in PrettyPrintSpec.js.
+    In ServiceNow's Rhino 1.5R4 Object.create() is not defined.
+    */
+    expect(jasmine.getEnv().ieVersion).toBeLessThan(9);
   });
 });
 
