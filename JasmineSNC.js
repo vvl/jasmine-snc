@@ -2624,13 +2624,6 @@ getJasmineRequireObj().matchersUtil = function(j$) {
   function eq(a, b, aStack, bStack, customTesters) {
     var result = true;
     
-    // Added to the jasmine.js code to support Rhino 1.5R4
-    if (typeof a === 'undefined' || typeof b === 'undefined') {
-      // we suppose that an undefined value is equal to any other undefined
-      // yet it is different from any defined value
-      return (typeof a === 'undefined' && typeof b === 'undefined');
-    }
-
     var asymmetricResult = asymmetricMatch(a, b);
     if (!j$.util.isUndefined(asymmetricResult)) {
       return asymmetricResult;
@@ -2641,6 +2634,13 @@ getJasmineRequireObj().matchersUtil = function(j$) {
       if (!j$.util.isUndefined(customTesterResult)) {
         return customTesterResult;
       }
+    }
+
+    // Added to the jasmine.js code to support Rhino 1.5R4
+    if (typeof a === 'undefined' || typeof b === 'undefined') {
+      // we suppose that an undefined value is equal to any other undefined
+      // yet it is different from any defined value
+      return (typeof a === 'undefined' && typeof b === 'undefined');
     }
 
     if (a instanceof Error && b instanceof Error) {
