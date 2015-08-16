@@ -4,31 +4,37 @@ describe("The timer interface for Rhino 1.5R4", function() {
     JasmineSNC includes a custom implementation for it.
   */
   
-  var jsnc_under_test,
-      j$;
-  
-  beforeEach(function() {
-    jsnc_under_test = new JasmineSNC({});
-    j$ = jsnc_under_test.jasmine;
+  it("setTimeout() is defined in the global scope", function() {
+    expect(setTimeout).toBeDefined();
+    expect(setInterval).toBeDefined();
+    expect(clearTimeout).toBeDefined();
+    expect(clearInterval).toBeDefined();
   });
   
-  it("different JasmineSNC environments should be independent", function() {
-    expect(jasmine.getGlobal()).not.toBe(j$.getGlobal());
-  });
-  
-  it("running one JasmineSNC environment should not execute specs from another", function() {
-    jsnc_under_test.run();
-    expect(true).toBe(true);
-  });
-    
-  it("The timer interface is defined", function() {
+  it("setTimeout() is defined in jasmine.getGlobal()", function() {
     expect(j$.getGlobal().setTimeout).toBeDefined();
     expect(j$.getGlobal().setInterval).toBeDefined();
     expect(j$.getGlobal().clearTimeout).toBeDefined();
     expect(j$.getGlobal().clearInterval).toBeDefined();
   });
   
-  it("setTimeout() works", function(){
+  it("setTimeout() in the global scope is the same as in jasmine.getGlobal()", function() {
+    expect(j$.getGlobal().setTimeout).toBe(setTimeout);
+    expect(j$.getGlobal().setInterval).toBe(setInterval);
+    expect(j$.getGlobal().clearTimeout).toBe(clearTimeout);
+    expect(j$.getGlobal().clearInterval).toBe(clearInterval);
+  });
+  
+  it("jasmine.getGlobal() refers to the same object in different JasmineSNC instances", function() {
+    expect(jasmine.getGlobal()).toBe(j$.getGlobal());
+  });
+  
+  it("running one JasmineSNC environment should not execute specs from another", function() {
+    jsnc_under_test.run();
+    expect(true).toBe(true);
+  });
+  
+  xit("setTimeout() works", function(){
     var foo = {
       deferredFn: function() {}
     };

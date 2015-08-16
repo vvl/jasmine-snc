@@ -1,4 +1,4 @@
-function require_jasmine_js(scope) {
+function require_jasmine_js() {
 
 /*
 Copyright (c) 2008-2015 Pivotal Labs
@@ -77,7 +77,7 @@ var getJasmineRequireObj = (function (jasmineGlobal) {
   };
 
   return getJasmineRequire;
-})(scope);
+})(this);
 
 getJasmineRequireObj().requireMatchers = function(jRequire, j$) {
   var availableMatchers = [
@@ -3755,28 +3755,38 @@ if (typeof exports === "object") {
 
 /// -- boot.js
 var JasmineSNC = Class.create();
+JasmineSNC.timer = (function(global){
+  // mixin the standard timer interface implementation: setTimeout, clearTimeout, setInterval, clearInterval
+  // based on ServiceNow's gs.sleep() method
+  var jsnc_eval_sleep = function(ms) {};
+  if (typeof module !== 'undefined') {
+    var sleep = require('sleep');
+    jsnc_eval_sleep = function(ms) {
+      sleep.usleep(ms * 1000);
+    }
+  } else if (typeof gs !== 'undefined') {
+    jsnc_eval_sleep = function(ms) {
+      gs.sleep(ms);
+    }
+  }
+  var timer = {};
+  timer.timerLoop = makeWindowTimer(global, jsnc_eval_sleep);
+  timer.setTimeout = global.setTimeout;
+  timer.setInterval = global.setInterval;
+  timer.clearTimeout = global.clearTimeout;
+  timer.clearInterval = global.clearInterval;
+  timer.run = function(initFn) {
+    this.setTimeout(initFn, 0);
+    this.timerLoop();
+  }
+  return timer;
+})(this);
+
 JasmineSNC.prototype = {
-    jasmine: null,
-    
-    initialize: function(mixInScope) {
-        // mixin the standard timer interface implementation: setTimeout, clearTimeout, setInterval, clearInterval
-        // based on ServiceNow's gs.sleep() method
-        var jsnc_eval_sleep = function(ms) {};
-        if (typeof module !== 'undefined') {
-          var sleep = require('sleep');
-          jsnc_eval_sleep = function(ms) {
-            sleep.usleep(ms * 1000);
-          }
-        } else if (typeof gs !== 'undefined') {
-          jsnc_eval_sleep = function(ms) {
-            gs.sleep(ms);
-          }
-        }
-        this.timerLoop = makeWindowTimer(this, jsnc_eval_sleep);
-        
+    initialize: function() {
         // initializes the getJasmineRequireObj function and captures the jasmine's global scope
         // this JasmineSNC instance will be used as Jasmine's global scope
-        this.getJasmineRequireObj = require_jasmine_js(this);
+        this.getJasmineRequireObj = require_jasmine_js();
         
         /**
          * ## Require & Instantiate
@@ -3831,29 +3841,28 @@ JasmineSNC.prototype = {
          * Build up the functions that will be exposed as the Jasmine public interface. A project can customize, rename or alias any
          * of these functions as desired, provided the implementation remains unchanged.
          */
-        var jasmineInterface = jasmineRequire.interface2(jasmine, env);
+        this.jasmineInterface = jasmineRequire.interface2(jasmine, env);
 
         /**
          * The `jsApiReporter` also receives spec results, and is used by any environment that needs to extract the results from JavaScript.
          */
-        env.addReporter(jasmineInterface.jsApiReporter);
+        env.addReporter(this.jasmineInterface.jsApiReporter);
         env.addReporter(sncReporter);
-        
+    },
+    
+    into: function(mixInScope) {
         if (typeof mixInScope !== 'undefined') {
             /**
              * Add all of the Jasmine global/public interface to the global scope, so a project can use the public interface directly.
              * For example, calling `describe` in specs instead of `jasmine.getEnv().describe`.
              */
-            Object.extend(mixInScope, jasmineInterface);
+            Object.extend(mixInScope, this.jasmineInterface);
         }
+        return this;
     },
 
     run: function() {
-      var self = this;
-      this.setTimeout(function(){
-        self.jasmine.getEnv().execute();
-      }, 0);
-      this.timerLoop();
+        this.jasmine.getEnv().execute();
     },
 
     type: 'JasmineSNC'
