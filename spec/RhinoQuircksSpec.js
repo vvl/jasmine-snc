@@ -157,6 +157,26 @@ describe("Rhino 1.5R4 quirks", function() {
     //expect(long.length).toEqual(3);
   });
   
+  it("expected failure test handled RegExps correctly", function() {
+    /*
+    In ServiceNow Rhino 1.5R4 regexp literals have the type SNRegExp, not RegExp
+
+    Replace the following code in EnvSpec.js:
+    
+      if (Object.prototype.toString.call(expectedFailure) === '[object RegExp]') {
+    
+    replace with
+    
+      if (expectedFailure instanceof RegExp) {
+    
+    */
+    var re = /foo/;
+    expect(re instanceof RegExp).toBeTruthy();
+    
+    var type = Object.prototype.toString.call(re);
+    expect(type).toBe('[object SNRegExp]');
+  });
+  
   it("The 'toThrowError' matcher correctly shows the typename of the thrown Error", function() {
     /*
     In Rhino 1.5R4 the constructor for all 6 standard subclasses of the Error type is the same: 'function Error() { }'
