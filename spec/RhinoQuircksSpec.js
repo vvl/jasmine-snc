@@ -260,4 +260,35 @@ describe("Rhino 1.5R4 quirks", function() {
     */
     expect(j$.getEnv().ieVersion).toBeLessThan(9);
   });
+  
+  it("for (var key in obj) returns properties in a random order", function() {
+    /*
+    In ServiceNow's Rhino 1.5R4 the for (var key in obj) loop returns properties in a random order.
+    [in Node the properties are returned in the order they were added to the object]
+    */
+    var alphabetical = {};
+    alphabetical.bbb = '';
+    alphabetical.aaa = '';
+    
+    var keys = getProperties(alphabetical)
+    expect(keys[0]).toEqual('aaa');
+    expect(keys[1]).toEqual('bbb');
+    
+    
+    var nonAlphabetical = {};
+    nonAlphabetical.bProp = '';
+    nonAlphabetical.aProp = '';
+    
+    keys = getProperties(nonAlphabetical)
+    expect(keys[0]).toEqual('bProp');
+    expect(keys[1]).toEqual('aProp');
+    
+    function getProperties(obj) {
+      var keys = [];
+      for (var key in obj) {
+        keys.push(key);
+      }
+      return keys;
+    }
+  });
 });
