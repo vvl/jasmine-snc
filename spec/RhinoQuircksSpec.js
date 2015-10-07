@@ -263,7 +263,7 @@ describe("Rhino 1.5R4 quirks", function() {
   
   it("for (var key in obj) returns properties in a random order", function() {
     /*
-    In ServiceNow's Rhino 1.5R4 the for (var key in obj) loop returns properties in a random order.
+    In ServiceNow's Rhino 1.5R4 the 'for (var key in obj)' loop returns properties in a random order.
     [in Node the properties are returned in the order they were added to the object]
     */
     var alphabetical = {};
@@ -290,5 +290,59 @@ describe("Rhino 1.5R4 quirks", function() {
       }
       return keys;
     }
+  });
+  
+  it('Java exceptions should not crash Jasmine', function(){
+    /*
+      In ServiceNow's Rhino 1.5R4 accessing the toString method without calling it
+      on Java objects crashes the JavaScript evaluator.
+    */
+    
+    env = new j$.Env();
+    env.describe('suite for break on exceptions', function() {
+      env.it('should break when an exception is thrown', function() {
+        throw new Packages.java.lang.String('xxx');
+      });
+    });
+    var spy = jasmine.createSpy('spy');
+
+    expect(function(){
+      env.execute();
+      spy();
+    }).not.toThrow();
+
+    expect(spy).toHaveBeenCalled();
+
+    /* FIX:
+    
+      Replace the code in theSpec.isPendingSpecException() function:
+    
+        Spec.isPendingSpecException = function(e) {
+          return !!(e && e.toString && e.toString().indexOf(Spec.pendingSpecExceptionMessage) !== -1);
+        };
+      
+      with the code below:
+      
+        Spec.isPendingSpecException = function(e) {
+          if (!e) {
+            return false;
+          }
+          
+          // ServiceNow's version of Rhino has a bug (possibly, this one https://bugzilla.mozilla.org/show_bug.cgi?id=220584)
+          // Due to this bug trying to access e.toString (not calling the function but just accessing it) causes the Rhino
+          // evaluator to throw a Java Runtime exception:
+          // java.lang.RuntimeException: org.mozilla.javascript.PropertyException: Constructor for "TypeError" not found
+          var hasToString;
+          if (__safe_instanceof(e, Packages.java.lang.Object)) {
+            // avoid checking e.toString for Java objects
+            hasToString = true;
+          } else {
+            hasToString = !!e.toString;
+          }
+          
+          return !!(hasToString && e.toString().indexOf(Spec.pendingSpecExceptionMessage) !== -1);
+        };
+    
+    */
   });
 });

@@ -442,7 +442,23 @@ getJasmineRequireObj().Spec = function(j$) {
   Spec.pendingSpecExceptionMessage = '=> marked Pending';
 
   Spec.isPendingSpecException = function(e) {
-    return !!(e && e.toString && e.toString().indexOf(Spec.pendingSpecExceptionMessage) !== -1);
+    if (!e) {
+      return false;
+    }
+    
+    // ServiceNow's version of Rhino has a bug (possibly, this one https://bugzilla.mozilla.org/show_bug.cgi?id=220584)
+    // Due to this bug trying to access e.toString (not calling the function but just accessing it) causes the Rhino
+    // evaluator to throw a Java Runtime exception:
+    // java.lang.RuntimeException: org.mozilla.javascript.PropertyException: Constructor for "TypeError" not found
+    var hasToString;
+    if (__safe_instanceof(e, Packages.java.lang.Object)) {
+      // avoid checking e.toString for Java objects
+      hasToString = true;
+    } else {
+      hasToString = !!e.toString;
+    }
+    
+    return !!(hasToString && e.toString().indexOf(Spec.pendingSpecExceptionMessage) !== -1);
   };
 
   return Spec;
